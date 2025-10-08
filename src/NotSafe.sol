@@ -16,7 +16,7 @@ import {Enum} from "./libraries/Enum.sol";
 import {Transaction} from "./libraries/Transaction.sol";
 import {Executor} from "./libraries/Executor.sol";
 import {SignatureHandler} from "./libraries/SignatureHandler.sol";
-import { EnumerableSet } from "openzeppelin-contracts/contracts/utils/structs/EnumerableSet.sol";
+import {EnumerableSet} from "openzeppelin-contracts/contracts/utils/structs/EnumerableSet.sol";
 
 contract NotSafe {
     using EnumerableSet for EnumerableSet.AddressSet;
@@ -28,6 +28,9 @@ contract NotSafe {
 
     EnumerableSet.AddressSet owners;
     mapping (address => bool) isOwner;
+
+    EnumerableSet.AddressSet modules;
+    mapping (address => bool) isModuleActivated;
 
     bool public activateSignature = false;
     function changeActivateSignature( bool activate) public
@@ -52,10 +55,33 @@ contract NotSafe {
     // This is where you can setup a Guard
     // No auth since this is a mock
     // Highly unrecommend on production
+    // ===========================================
     address public guardAddress;
     function setGuard( address guard) public
     {
         guardAddress = guard;
+    }
+
+    // ===========================================
+    function setModule( address module) public
+    {
+        require(!isModuleActivated[module], "module existed");
+        isModuleActivated[module] = true;
+        modules.add(module);
+    }
+
+    function removeModule( address module) public
+    {
+        require(isModuleActivated[module], "module not existed");
+        isModuleActivated[module] = false;
+        modules.remove(module);
+    }
+
+    // ===========================================
+    address public fallbackAddress;
+    function setFallbackHandler( address fallbackHandler) public
+    {
+        fallbackAddress = fallbackHandler;
     }
 
     function setOwnersAndThreshold(address[] calldata newOwners, uint256 newThreshold) external {
@@ -97,6 +123,7 @@ contract NotSafe {
         // you can add some magic here but it better to do with Safe Guard
     }
 
+    // Guard Handler here
     function execTransaction(
         address to,
         uint256 value,
@@ -137,6 +164,7 @@ contract NotSafe {
         
     }
 
+    // Module Handler here
     function execTransactionFromModule(
         address to,
         uint256 value,
@@ -160,32 +188,49 @@ contract NotSafe {
     }
 
     function execTransactionFromModuleReturnData(
-    address to,
-    uint256 value,
-    bytes memory data,
-    Enum.Operation operation
-) external returns (bool success, bytes memory returnData) {
-    bytes32 moduleTxHash;
-    address guard = guardAddress;
+        address to,
+        uint256 value,
+        bytes memory data,
+        Enum.Operation operation
+    ) external returns (bool success, bytes memory returnData) {
+        bytes32 moduleTxHash;
+        address guard = guardAddress;
 
-    if (guard != address(0))
-        moduleTxHash = IModuleGuard(guard).checkModuleTransaction(to, value, data, operation, msg.sender);
+        if (guard != address(0))
+            moduleTxHash = IModuleGuard(guard).checkModuleTransaction(to, value, data, operation, msg.sender);
 
-    success = Executor.execute(to, value, data, operation, type(uint256).max);
+        success = Executor.execute(to, value, data, operation, type(uint256).max);
 
-    assembly {
-        returnData := mload(0x40)
-        mstore(0x40, add(returnData, add(returndatasize(), 0x20)))
-        mstore(returnData, returndatasize())
-        returndatacopy(add(returnData, 0x20), 0, returndatasize())
+        assembly {
+            returnData := mload(0x40)
+            mstore(0x40, add(returnData, add(returndatasize(), 0x20)))
+            mstore(returnData, returndatasize())
+            returndatacopy(add(returnData, 0x20), 0, returndatasize())
+        }
+
+        if (guard != address(0))
+            IModuleGuard(guard).checkAfterModuleExecution(moduleTxHash, success);
+
+        if (success) emit ExecutionFromModuleSuccess(msg.sender);
+        else emit ExecutionFromModuleFailure(msg.sender);
     }
 
-    if (guard != address(0))
-        IModuleGuard(guard).checkAfterModuleExecution(moduleTxHash, success);
-
-    if (success) emit ExecutionFromModuleSuccess(msg.sender);
-    else emit ExecutionFromModuleFailure(msg.sender);
-}
+    // Fallback Handler here
+    fallback() external
+    {
+        address handle = fallbackAddress;
+        if (handle != address(0)) {
+            assembly {
+                calldatacopy(0, 0, calldatasize())
+                let success := delegatecall(gas(), handle, 0, calldatasize(), 0, 0)
+                returndatacopy(0, 0, returndatasize())
+                if eq(success, 0) {
+                    revert(0, returndatasize())
+                }
+                return(0, returndatasize())
+            }
+        }
+    }
 
     function checkSignatures(bytes32 txHash,bytes memory signatures) public view returns (bool) 
     {
