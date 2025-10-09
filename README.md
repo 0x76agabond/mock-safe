@@ -34,7 +34,7 @@ Since this is a test framework, you should check test directory for example
 clone this project
 forge build
 forge test -vvv
-happy coding
+happy coding 😎
 ```
 ---
 ## Example
