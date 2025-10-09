@@ -29,3 +29,26 @@ but skips all proxy layers — it performs **real calls** directly for determini
 ```bash
 forge build
 forge test -vvv
+```
+---
+### Example
+```solidity
+BEP20Token token = new BEP20Token();
+
+vm.startPrank(ks.addrs[1]);
+NotSafe notSafe1 = new NotSafe();
+{
+    address[] memory owners1 = new address[](3);
+    for (uint256 i = 0; i < 3; i++) {
+        owners1[i] = ks.addrs[i];
+    }
+    notSafe1.setOwnersAndThreshold(owners1, 2);
+}
+
+address[] memory list1 = notSafe1.getOwners();
+for (uint256 i = 0; i < list1.length; i++) {
+    console.log("Owner:", list1[i]);
+}
+
+```
+---

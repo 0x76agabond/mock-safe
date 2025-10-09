@@ -57,6 +57,7 @@ contract TestNotSafe is Test {
         KeySet memory ks = ownerSummoner(6, "not-seed");
 
         vm.startPrank(ks.addrs[0]);
+        // ERC-20 compatible
         BEP20Token token = new BEP20Token();
 
         vm.startPrank(ks.addrs[1]);
