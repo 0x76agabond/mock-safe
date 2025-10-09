@@ -10,6 +10,8 @@
  */
 pragma solidity ^0.8.26;
 
+import "forge-std/console2.sol";
+
 import {ITransactionGuard} from "./interfaces/ITransactionGuard.sol";
 import {IModuleGuard} from "./interfaces/IModuleGuard.sol";
 
@@ -31,10 +33,19 @@ contract NotSafe {
     EnumerableSet.AddressSet owners;
     mapping(address => bool) isOwner;
 
+    function getOwners() external view returns (address[] memory result) {
+        uint256 len = owners.length();
+        result = new address[](len);
+
+        for (uint256 i = 0; i < len; i++) {
+            result[i] = owners.at(i);
+        }
+    }
+
     EnumerableSet.AddressSet modules;
     mapping(address => bool) isModuleActivated;
 
-    bool public activateSignature = false;
+    bool public activateSignature = true;
 
     function changeActivateSignature(bool activate) public {
         activateSignature = activate;
@@ -247,7 +258,8 @@ contract NotSafe {
         for (uint256 i = 0; i < signatures.length; i += SignatureHandler.SIGNATURE_SIZE) {
             (uint8 v, bytes32 r, bytes32 s_) = SignatureHandler.signatureSplit(signatures, i);
             address recovered = SignatureHandler._recoverSigner(txHash, v, r, s_);
-            require(recovered != address(0), "Invalid Owner");
+
+            require(recovered != address(0), "Blank Owner");
             require(isOwner[recovered], "Invalid Owner");
 
             if (++counter >= threshold) {
