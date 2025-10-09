@@ -25,13 +25,19 @@ but skips all proxy layers — it performs **real calls** directly for determini
 ⚠️ This is a mock for testing only. Do not deploy to mainnet or use with real assets.
 
 ---
-### Quick Start
+## Note
+Since this is a test framework, you should check test directory for example
+
+---
+## Quick Start
 ```bash
+clone this project
 forge build
 forge test -vvv
+happy coding
 ```
 ---
-### Example
+## Example
 ```solidity
 // ============================================
 // Mock ERC-20
