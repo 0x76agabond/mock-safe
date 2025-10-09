@@ -33,29 +33,35 @@ forge test -vvv
 ---
 ### Example
 ```solidity
+// Mock ERC-20
 BEP20Token token = new BEP20Token();
 
 vm.startPrank(ks.addrs[1]);
-NotSafe notSafe1 = new NotSafe();
+
+// Protagonist
+NotSafe notSafe = new NotSafe();
 {
-    address[] memory owners1 = new address[](3);
+    address[] memory owners = new address[](3);
     for (uint256 i = 0; i < 3; i++) {
-        owners1[i] = ks.addrs[i];
+        owners[i] = ks.addrs[i];
     }
-    notSafe1.setOwnersAndThreshold(owners1, 2);
+    notSafe.setOwnersAndThreshold(owners, 2);
 }
 
-address[] memory list1 = notSafe1.getOwners();
+// Check Owner
+address[] memory list1 = notSafe.getOwners();
 for (uint256 i = 0; i < list1.length; i++) {
     console.log("Owner:", list1[i]);
 }
 
 // 10 token
-token.transfer(address(notSafe1), 1e19);
-console.log("Balance of notSafe1: ", token.balanceOf(address(notSafe1)));
+token.transfer(address(notSafe), 1e19);
+console.log("Balance of notSafe: ", token.balanceOf(address(notSafe)));
 
+// Build Transaction
+// Next transaction mean current nonce + 1
 bytes32 txHash = Transaction.getTransactionHash(
-    address(notSafe1),
+    address(notSafe),
     address(token),
     0,
     abi.encodeWithSelector(token.transfer.selector, address(notSafe2), 1e18),
@@ -65,15 +71,16 @@ bytes32 txHash = Transaction.getTransactionHash(
     0,
     address(0),
     address(0),
-    notSafe1.nonce() + 1
+    notSafe.nonce() + 1
 );
 
-// notsafe1 owner key 1, 2, 3 - threshold - 2
+// notSafe owner key 1, 2, 3 - threshold - 2
 bytes memory sig1 = generateSignature(txHash, ks.keys[1]);
 bytes memory sig2 = generateSignature(txHash, ks.keys[2]);
 bytes memory sigs = bytes.concat(sig1, sig2);
 
-bool success = notSafe1.execTransaction(
+// exec multisig transaction
+bool success = notSafe.execTransaction(
     address(token),
     0,
     abi.encodeWithSelector(token.transfer.selector, address(notSafe2), 1e18),
@@ -87,7 +94,7 @@ bool success = notSafe1.execTransaction(
 );
 
 console.log("execTransaction", success);
-console.log("Balance of notSafe1:", token.balanceOf(address(notSafe1)));
+console.log("Balance of notSafe:", token.balanceOf(address(notSafe)));
 
 ```
 ---
