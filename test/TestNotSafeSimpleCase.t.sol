@@ -17,7 +17,7 @@ import {Enum} from "../src/libraries/Enum.sol";
 
 import {IBEP20, BEP20Token} from "./MockContract/ERC20.sol";
 
-contract TestNotSafe is Test {
+contract TestNotSafeSimpleCase is Test {
     struct KeySet {
         uint256[] keys;
         address[] addrs;
