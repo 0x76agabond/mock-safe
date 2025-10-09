@@ -34,11 +34,13 @@ forge test -vvv
 ### Example
 ```solidity
 // Mock ERC-20
+// ============================================
 BEP20Token token = new BEP20Token();
 
 vm.startPrank(ks.addrs[1]);
 
 // Protagonist
+// ============================================
 NotSafe notSafe = new NotSafe();
 {
     address[] memory owners = new address[](3);
@@ -49,17 +51,20 @@ NotSafe notSafe = new NotSafe();
 }
 
 // Check Owner
+// ============================================
 address[] memory list1 = notSafe.getOwners();
 for (uint256 i = 0; i < list1.length; i++) {
     console.log("Owner:", list1[i]);
 }
 
 // 10 token
+// ============================================
 token.transfer(address(notSafe), 1e19);
 console.log("Balance of notSafe: ", token.balanceOf(address(notSafe)));
 
 // Build Transaction
 // Next transaction mean current nonce + 1
+// ============================================
 bytes32 txHash = Transaction.getTransactionHash(
     address(notSafe),
     address(token),
@@ -75,11 +80,13 @@ bytes32 txHash = Transaction.getTransactionHash(
 );
 
 // notSafe owner key 1, 2, 3 - threshold - 2
+// ============================================
 bytes memory sig1 = generateSignature(txHash, ks.keys[1]);
 bytes memory sig2 = generateSignature(txHash, ks.keys[2]);
 bytes memory sigs = bytes.concat(sig1, sig2);
 
 // exec multisig transaction
+// ============================================
 bool success = notSafe.execTransaction(
     address(token),
     0,
