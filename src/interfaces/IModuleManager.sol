@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 pragma solidity >=0.7.0 <0.9.0;
+
 import {Enum} from "../libraries/Enum.sol";
 
 /**
@@ -68,12 +69,9 @@ interface IModuleManager {
      * @param operation Operation type of the module transaction: 0 for `CALL` and 1 for `DELEGATECALL`.
      * @return success Boolean flag indicating if the call succeeded.
      */
-    function execTransactionFromModule(
-        address to,
-        uint256 value,
-        bytes memory data,
-        Enum.Operation operation
-    ) external returns (bool success);
+    function execTransactionFromModule(address to, uint256 value, bytes memory data, Enum.Operation operation)
+        external
+        returns (bool success);
 
     /**
      * @notice Execute `operation` to `to` with native token `value` and return data.
@@ -84,12 +82,9 @@ interface IModuleManager {
      * @return success Boolean flag indicating if the call succeeded.
      * @return returnData Data returned by the call.
      */
-    function execTransactionFromModuleReturnData(
-        address to,
-        uint256 value,
-        bytes memory data,
-        Enum.Operation operation
-    ) external returns (bool success, bytes memory returnData);
+    function execTransactionFromModuleReturnData(address to, uint256 value, bytes memory data, Enum.Operation operation)
+        external
+        returns (bool success, bytes memory returnData);
 
     /**
      * @notice Returns whether or not a module is enabled.
@@ -106,7 +101,10 @@ interface IModuleManager {
      * @return array Array of modules.
      * @return next Start of the next page.
      */
-    function getModulesPaginated(address start, uint256 pageSize) external view returns (address[] memory array, address next);
+    function getModulesPaginated(address start, uint256 pageSize)
+        external
+        view
+        returns (address[] memory array, address next);
 
     /**
      * @notice Set Module Guard `moduleGuard` for the Safe. Make sure you trust the module guard.

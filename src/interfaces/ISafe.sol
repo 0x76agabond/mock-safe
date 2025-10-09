@@ -12,7 +12,9 @@ import {IOwnerManager} from "./IOwnerManager.sol";
  * @author @safe-global/safe-protocol
  */
 interface ISafe is IModuleManager, IGuardManager, IOwnerManager, IFallbackManager {
-    event SafeSetup(address indexed initiator, address[] owners, uint256 threshold, address initializer, address fallbackHandler);
+    event SafeSetup(
+        address indexed initiator, address[] owners, uint256 threshold, address initializer, address fallbackHandler
+    );
     event ApproveHash(bytes32 indexed approvedHash, address indexed owner);
     event SignMsg(bytes32 indexed msgHash);
     event ExecutionFailure(bytes32 indexed txHash, uint256 payment);
@@ -42,7 +44,8 @@ interface ISafe is IModuleManager, IGuardManager, IOwnerManager, IFallbackManage
         address payable paymentReceiver
     ) external;
 
-    /** @notice Executes a `operation` {0: Call, 1: DelegateCall}} transaction to `to` with `value` (Native Currency)
+    /**
+     * @notice Executes a `operation` {0: Call, 1: DelegateCall}} transaction to `to` with `value` (Native Currency)
      *          and pays `gasPrice` * `gasLimit` in `gasToken` token to `refundReceiver`.
      * @dev The fees are always transferred, even if the user transaction fails.
      *      This method doesn't perform any sanity check of the transaction, such as:
@@ -75,19 +78,16 @@ interface ISafe is IModuleManager, IGuardManager, IOwnerManager, IFallbackManage
         bytes memory signatures
     ) external payable returns (bool success);
 
-     /**
+    /**
      * @dev Allows a Module to execute a Safe transaction without any further confirmations.
      * @param to Destination address of module transaction.
      * @param value Ether value of module transaction.
      * @param data Data payload of module transaction.
      * @param operation Operation type of module transaction.
      */
-    function execTransactionFromModule(
-        address to,
-        uint256 value,
-        bytes memory data,
-        Enum.Operation operation
-    ) external returns (bool success);
+    function execTransactionFromModule(address to, uint256 value, bytes memory data, Enum.Operation operation)
+        external
+        returns (bool success);
 
     /**
      * @notice Execute `operation` (0: Call, 1: DelegateCall) to `to` with `value` (Native Token) and return data
@@ -98,12 +98,9 @@ interface ISafe is IModuleManager, IGuardManager, IOwnerManager, IFallbackManage
      * @return success Boolean flag indicating if the call succeeded.
      * @return returnData Data returned by the call.
      */
-    function execTransactionFromModuleReturnData(
-        address to,
-        uint256 value,
-        bytes memory data,
-        Enum.Operation operation
-    ) external returns (bool success, bytes memory returnData);
+    function execTransactionFromModuleReturnData(address to, uint256 value, bytes memory data, Enum.Operation operation)
+        external
+        returns (bool success, bytes memory returnData);
 
     /**
      * @notice Checks whether the signature provided is valid for the provided data and hash and executor. Reverts otherwise.
@@ -127,7 +124,9 @@ interface ISafe is IModuleManager, IGuardManager, IOwnerManager, IFallbackManage
      *                   Can be packed ECDSA signature ({bytes32 r}{bytes32 s}{uint8 v}), contract signature (EIP-1271) or approved hash.
      * @param requiredSignatures Amount of required valid signatures.
      */
-    function checkNSignatures(address executor, bytes32 dataHash, bytes memory signatures, uint256 requiredSignatures) external view;
+    function checkNSignatures(address executor, bytes32 dataHash, bytes memory signatures, uint256 requiredSignatures)
+        external
+        view;
 
     /**
      * @notice Marks hash `hashToApprove` as approved.

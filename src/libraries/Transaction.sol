@@ -1,19 +1,20 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
 
-/******************************************************************************\
-* Author: Hoang <ginz1504@gmail.com>
-* Contact: https://github.com/0x76agabond 
-* =============================================================================
-* Gnosis Safe Mock (NotSafe)
-/******************************************************************************/
-
+/**
+ * \
+ * Author: Hoang <ginz1504@gmail.com>
+ * Contact: https://github.com/0x76agabond
+ * =============================================================================
+ * Gnosis Safe Mock (NotSafe)
+ * /*****************************************************************************
+ */
 import {Enum} from "./Enum.sol";
-
 
 // Implement EIP-712
 library Transaction {
-    bytes32 private constant DOMAIN_SEPARATOR_TYPEHASH = 0x47e79534a245952e8b16893a336b85a3d9ea9fa8c573f3d803afb92a79469218;
+    bytes32 private constant DOMAIN_SEPARATOR_TYPEHASH =
+        0x47e79534a245952e8b16893a336b85a3d9ea9fa8c573f3d803afb92a79469218;
     bytes32 private constant SAFE_TX_TYPEHASH = 0xbb8310d486368db6bd6f849402fdd73ad53d316b5a4b2644ad6efe0f941286d8;
 
     function domainSeparator(address owner) public view returns (bytes32 sep) {
@@ -22,9 +23,9 @@ library Transaction {
             chainId := chainid()
 
             let ptr := mload(0x40)
-            mstore(ptr, DOMAIN_SEPARATOR_TYPEHASH)     
-            mstore(add(ptr, 0x20), chainId)           
-            mstore(add(ptr, 0x40), owner)               
+            mstore(ptr, DOMAIN_SEPARATOR_TYPEHASH)
+            mstore(add(ptr, 0x20), chainId)
+            mstore(add(ptr, 0x40), owner)
 
             sep := keccak256(ptr, 0x60)
         }
@@ -90,8 +91,7 @@ library Transaction {
             // Calculate the hash
             txHash := keccak256(add(ptr, 30), 66)
         }
-            
+
         return txHash;
-        
     }
 }

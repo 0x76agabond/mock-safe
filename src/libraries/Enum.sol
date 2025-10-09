@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 
-/******************************************************************************\
-* Author: Hoang <ginz1504@gmail.com>
-* Contact: https://github.com/0x17agabond 
-* =============================================================================
-* Diamond Testing via OOP (DTO)
-/******************************************************************************/
-
-
+/**
+ * \
+ * Author: Hoang <ginz1504@gmail.com>
+ * Contact: https://github.com/0x17agabond
+ * =============================================================================
+ * Diamond Testing via OOP (DTO)
+ * /*****************************************************************************
+ */
 pragma solidity ^0.8.26;
 
 /**
@@ -15,7 +15,6 @@ pragma solidity ^0.8.26;
  * @author @safe-global/safe-protocol
  */
 contract Enum {
-    
     enum Operation {
         Call,
         DelegateCall

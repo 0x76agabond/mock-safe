@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
 
-/******************************************************************************\
-* Author: Hoang <ginz1504@gmail.com>
-* Contact: https://github.com/0x76agabond 
-* =============================================================================
-* Diamond Testing via OOP (DTO)
-/******************************************************************************/
-
+/**
+ * \
+ * Author: Hoang <ginz1504@gmail.com>
+ * Contact: https://github.com/0x76agabond
+ * =============================================================================
+ * Diamond Testing via OOP (DTO)
+ * /*****************************************************************************
+ */
 import {Enum} from "./../libraries/Enum.sol";
 import {IERC165} from "./IERC165.sol";
 
@@ -52,8 +53,7 @@ interface ITransactionGuard is IERC165 {
 
 abstract contract BaseTransactionGuard is ITransactionGuard {
     function supportsInterface(bytes4 interfaceId) external view virtual override returns (bool) {
-        return
-            interfaceId == type(ITransactionGuard).interfaceId || // 0xe6d7a83a
-            interfaceId == type(IERC165).interfaceId; // 0x01ffc9a7
+        return interfaceId == type(ITransactionGuard).interfaceId // 0xe6d7a83a
+            || interfaceId == type(IERC165).interfaceId; // 0x01ffc9a7
     }
 }

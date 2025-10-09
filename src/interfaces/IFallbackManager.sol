@@ -5,7 +5,6 @@ pragma solidity >=0.7.0 <0.9.0;
  * @title IFallbackManager - A contract interface managing fallback calls made to this contract.
  * @author @safe-global/safe-protocol
  */
-
 interface IFallbackManager {
     event ChangedFallbackHandler(address indexed handler);
 
@@ -18,4 +17,3 @@ interface IFallbackManager {
      */
     function setFallbackHandler(address handler) external;
 }
-
