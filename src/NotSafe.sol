@@ -147,11 +147,11 @@ contract NotSafe {
         address gasToken,
         address payable refundReceiver,
         bytes memory signatures
-    ) external payable returns (bool success) {        
+    ) external payable returns (bool success) {
         _txHash = Transaction.getTransactionHash(
             address(this), to, value, data, operation, safeTxGas, baseGas, gasPrice, gasToken, refundReceiver, nonce
         );
-        
+
         nonce += 1;
 
         // this block remove some calculaion on original Safe

@@ -1,4 +1,4 @@
-pragma solidity =0.8.26; 
+pragma solidity =0.8.26;
 // SPDX-License-Identifier: MIT
 
 /**
@@ -9,7 +9,6 @@ pragma solidity =0.8.26;
  * Gnosis Safe Mock (NotSafe)
  * /*****************************************************************************
  */
-
 import "forge-std/Test.sol";
 import "forge-std/console2.sol";
 import "forge-std/console.sol";
@@ -18,11 +17,10 @@ import {ISafe} from "./interfaces/ISafe.sol";
 import {BaseGuard} from "./base/BaseGuard.sol";
 
 contract MockGuard is BaseGuard {
-
-    // Safe recommend to leave this function as blank fallback 
+    // Safe recommend to leave this function as blank fallback
     fallback() external {}
 
-    // Safe call this function before execute transaction 
+    // Safe call this function before execute transaction
     function checkTransaction(
         address to,
         uint256 value,
@@ -37,24 +35,21 @@ contract MockGuard is BaseGuard {
         address executor
     ) external override {
         bytes32 txHash;
-            uint256 nonce;
+        uint256 nonce;
         {
-            
-         
-         ISafe safe = ISafe(payable(msg.sender));
-         nonce =  safe.nonce(); 
-         //// nonce++ when pass to this function so you should - 1 to get real nonce
-         txHash = safe.getTransactionHash(to, value, data, operation, safeTxGas, baseGas, gasPrice, gasToken, refundReceiver, nonce - 1);
+            ISafe safe = ISafe(payable(msg.sender));
+            nonce = safe.nonce();
+            //// nonce++ when pass to this function so you should - 1 to get real nonce
+            txHash = safe.getTransactionHash(
+                to, value, data, operation, safeTxGas, baseGas, gasPrice, gasToken, refundReceiver, nonce - 1
+            );
 
             console.log("checkTransaction");
-        } 
+        }
     }
 
-    // Safe call this function after execute transaction 
-    function checkAfterExecution(
-        bytes32 txHash,
-        bool success
-    ) external override {
+    // Safe call this function after execute transaction
+    function checkAfterExecution(bytes32 txHash, bool success) external override {
         // normaly, you should do change the state of Guard here.
         console.log("checkAfterExecution");
     }
@@ -66,10 +61,10 @@ contract MockGuard is BaseGuard {
         bytes memory data,
         Enum.Operation operation,
         address module
-    ) external override pure returns (bytes32 moduleTxHash) {
-       // moduleTxHash = keccak256(abi.encodePacked(to, value, data, operation, module));
-       // Implement Guard Multisig Here
-       console.log("checkModuleTransaction");
+    ) external pure override returns (bytes32 moduleTxHash) {
+        // moduleTxHash = keccak256(abi.encodePacked(to, value, data, operation, module));
+        // Implement Guard Multisig Here
+        console.log("checkModuleTransaction");
     }
 
     // Safe call this function after execute transaction using module

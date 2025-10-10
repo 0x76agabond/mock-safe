@@ -17,9 +17,7 @@ import {Enum} from "../src/libraries/Enum.sol";
 
 import {IBEP20, BEP20Token} from "./MockContract/ERC20.sol";
 
-
 contract TestNotSafeWithGuard is Test {
-
     struct KeySet {
         uint256[] keys;
         address[] addrs;
@@ -52,15 +50,13 @@ contract TestNotSafeWithGuard is Test {
     }
 
     function setUp() public {
-
-        // Setup        
+        // Setup
         vm.createSelectFork(vm.rpcUrl("opbnb"));
         ks = ownerSummoner(6, "not-seed");
     }
 
     // This is case where we test a blank Safe
     function test_No_Modules() public {
-        
         vm.startPrank(ks.addrs[0]);
         // ERC-20 compatible
         BEP20Token token = new BEP20Token();
@@ -130,7 +126,7 @@ contract TestNotSafeWithGuard is Test {
                 0,
                 address(0),
                 address(0),
-                notSafe1.nonce() 
+                notSafe1.nonce()
             );
 
             // notsafe1 owner key 1, 2, 3 - threshold - 2

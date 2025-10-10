@@ -9,11 +9,9 @@ pragma solidity ^0.8.26;
  * Gnosis Safe Mock (NotSafe)
  * /*****************************************************************************
  */
-
 import "forge-std/Test.sol";
 
 contract TestManager is Test {
-
     struct KeySet {
         uint256[] keys;
         address[] addrs;

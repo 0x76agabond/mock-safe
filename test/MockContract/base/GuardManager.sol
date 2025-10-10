@@ -8,7 +8,6 @@ import {IGuardManager} from "./../interfaces/IGuardManager.sol";
 import {Enum} from "./../libraries/Enum.sol";
 import {ErrorMessage} from "./../libraries/ErrorMessage.sol";
 
-
 /**
  * @title ITransactionGuard Interface
  */
@@ -53,9 +52,8 @@ interface ITransactionGuard is IERC165 {
 
 abstract contract BaseTransactionGuard is ITransactionGuard {
     function supportsInterface(bytes4 interfaceId) external view virtual override returns (bool) {
-        return
-            interfaceId == type(ITransactionGuard).interfaceId || // 0xe6d7a83a
-            interfaceId == type(IERC165).interfaceId; // 0x01ffc9a7
+        return interfaceId == type(ITransactionGuard).interfaceId // 0xe6d7a83a
+            || interfaceId == type(IERC165).interfaceId; // 0x01ffc9a7
     }
 }
 
@@ -71,8 +69,9 @@ abstract contract GuardManager is SelfAuthorized, IGuardManager {
      * @inheritdoc IGuardManager
      */
     function setGuard(address guard) external override authorized {
-        if (guard != address(0) && !ITransactionGuard(guard).supportsInterface(type(ITransactionGuard).interfaceId))
+        if (guard != address(0) && !ITransactionGuard(guard).supportsInterface(type(ITransactionGuard).interfaceId)) {
             ErrorMessage.revertWithError("GS300");
+        }
         /* solhint-disable no-inline-assembly */
         /// @solidity memory-safe-assembly
         assembly {

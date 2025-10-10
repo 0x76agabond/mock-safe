@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 /* solhint-disable one-contract-per-file */
 pragma solidity >=0.7.0 <0.9.0;
+
 import {SelfAuthorized} from "../common/SelfAuthorized.sol";
 import {IERC165} from "./../interfaces/IERC165.sol";
 import {IModuleManager} from "./../interfaces/IModuleManager.sol";
@@ -41,18 +42,17 @@ interface IModuleGuard is IERC165 {
 
 abstract contract BaseModuleGuard is IModuleGuard {
     function supportsInterface(bytes4 interfaceId) external view virtual override returns (bool) {
-        return
-            interfaceId == type(IModuleGuard).interfaceId || // 0x58401ed8
-            interfaceId == type(IERC165).interfaceId; // 0x01ffc9a7
+        return interfaceId == type(IModuleGuard).interfaceId // 0x58401ed8
+            || interfaceId == type(IERC165).interfaceId; // 0x01ffc9a7
     }
 }
 
 /**
  * @title Module Manager - A contract managing Safe modules
  * @notice Modules are extensions with unlimited access to a Safe that can be added to a Safe by its owners.
-           ⚠️ WARNING: Modules are a security risk since they can execute arbitrary transactions, 
-           so only trusted and audited modules should be added to a Safe. A malicious module can
-           completely takeover a Safe.
+ *            ⚠️ WARNING: Modules are a security risk since they can execute arbitrary transactions, 
+ *            so only trusted and audited modules should be added to a Safe. A malicious module can
+ *            completely takeover a Safe.
  * @author Stefan George - @Georgi87
  * @author Richard Meissner - @rmeissner
  */
@@ -63,7 +63,8 @@ abstract contract ModuleManager is SelfAuthorized, Executor, IModuleManager {
     address internal constant SENTINEL_MODULES = address(0x1);
 
     // keccak256("module_manager.module_guard.address")
-    bytes32 internal constant MODULE_GUARD_STORAGE_SLOT = 0xb104e0b93118902c651344349b610029d694cfdec91c589c91ebafbcd0289947;
+    bytes32 internal constant MODULE_GUARD_STORAGE_SLOT =
+        0xb104e0b93118902c651344349b610029d694cfdec91c589c91ebafbcd0289947;
 
     mapping(address => address) internal modules;
 
@@ -79,7 +80,9 @@ abstract contract ModuleManager is SelfAuthorized, Executor, IModuleManager {
         if (to != address(0)) {
             if (!isContract(to)) ErrorMessage.revertWithError("GS002");
             // Setup has to complete successfully or the transaction fails.
-            if (!execute(to, 0, data, Enum.Operation.DelegateCall, type(uint256).max)) ErrorMessage.revertWithError("GS000");
+            if (!execute(to, 0, data, Enum.Operation.DelegateCall, type(uint256).max)) {
+                ErrorMessage.revertWithError("GS000");
+            }
         }
     }
 
@@ -92,12 +95,10 @@ abstract contract ModuleManager is SelfAuthorized, Executor, IModuleManager {
      * @return guard Guard to be used for checking.
      * @return guardHash Hash returned from the guard tx check.
      */
-    function preModuleExecution(
-        address to,
-        uint256 value,
-        bytes memory data,
-        Enum.Operation operation
-    ) internal returns (address guard, bytes32 guardHash) {
+    function preModuleExecution(address to, uint256 value, bytes memory data, Enum.Operation operation)
+        internal
+        returns (address guard, bytes32 guardHash)
+    {
         onBeforeExecTransactionFromModule(to, value, data, operation);
         guard = getModuleGuard();
 
@@ -152,12 +153,11 @@ abstract contract ModuleManager is SelfAuthorized, Executor, IModuleManager {
     /**
      * @inheritdoc IModuleManager
      */
-    function execTransactionFromModule(
-        address to,
-        uint256 value,
-        bytes memory data,
-        Enum.Operation operation
-    ) external override returns (bool success) {
+    function execTransactionFromModule(address to, uint256 value, bytes memory data, Enum.Operation operation)
+        external
+        override
+        returns (bool success)
+    {
         (address guard, bytes32 guardHash) = preModuleExecution(to, value, data, operation);
         success = execute(to, value, data, operation, type(uint256).max);
         postModuleExecution(guard, guardHash, success);
@@ -166,12 +166,11 @@ abstract contract ModuleManager is SelfAuthorized, Executor, IModuleManager {
     /**
      * @inheritdoc IModuleManager
      */
-    function execTransactionFromModuleReturnData(
-        address to,
-        uint256 value,
-        bytes memory data,
-        Enum.Operation operation
-    ) external override returns (bool success, bytes memory returnData) {
+    function execTransactionFromModuleReturnData(address to, uint256 value, bytes memory data, Enum.Operation operation)
+        external
+        override
+        returns (bool success, bytes memory returnData)
+    {
         (address guard, bytes32 guardHash) = preModuleExecution(to, value, data, operation);
         success = execute(to, value, data, operation, type(uint256).max);
         /* solhint-disable no-inline-assembly */
@@ -201,7 +200,12 @@ abstract contract ModuleManager is SelfAuthorized, Executor, IModuleManager {
     /**
      * @inheritdoc IModuleManager
      */
-    function getModulesPaginated(address start, uint256 pageSize) external view override returns (address[] memory array, address next) {
+    function getModulesPaginated(address start, uint256 pageSize)
+        external
+        view
+        override
+        returns (address[] memory array, address next)
+    {
         if (start != SENTINEL_MODULES && !isModuleEnabled(start)) ErrorMessage.revertWithError("GS105");
         if (pageSize == 0) ErrorMessage.revertWithError("GS106");
         // Init array with max page size
@@ -217,13 +221,13 @@ abstract contract ModuleManager is SelfAuthorized, Executor, IModuleManager {
         }
 
         /**
-          Because of the argument validation, we can assume that the loop will always iterate over the valid module list values
-          and the `next` variable will either be an enabled module or a sentinel address (signalling the end). 
-          
-          If we haven't reached the end inside the loop, we need to set the next pointer to the last element of the modules array
-          because the `next` variable (which is a module by itself) acting as a pointer to the start of the next page is neither 
-          included to the current page, nor will it be included in the next one if you pass it as a start.
-        */
+         * Because of the argument validation, we can assume that the loop will always iterate over the valid module list values
+         *       and the `next` variable will either be an enabled module or a sentinel address (signalling the end). 
+         *
+         *       If we haven't reached the end inside the loop, we need to set the next pointer to the last element of the modules array
+         *       because the `next` variable (which is a module by itself) acting as a pointer to the start of the next page is neither 
+         *       included to the current page, nor will it be included in the next one if you pass it as a start.
+         */
         if (next != SENTINEL_MODULES) {
             next = array[moduleCount - 1];
         }
@@ -257,8 +261,9 @@ abstract contract ModuleManager is SelfAuthorized, Executor, IModuleManager {
      * @inheritdoc IModuleManager
      */
     function setModuleGuard(address moduleGuard) external override authorized {
-        if (moduleGuard != address(0) && !IModuleGuard(moduleGuard).supportsInterface(type(IModuleGuard).interfaceId))
+        if (moduleGuard != address(0) && !IModuleGuard(moduleGuard).supportsInterface(type(IModuleGuard).interfaceId)) {
             ErrorMessage.revertWithError("GS301");
+        }
 
         bytes32 slot = MODULE_GUARD_STORAGE_SLOT;
         /* solhint-disable no-inline-assembly */
@@ -291,5 +296,8 @@ abstract contract ModuleManager is SelfAuthorized, Executor, IModuleManager {
      * @param data Data payload of module transaction.
      * @param operation Operation type of module transaction.
      */
-    function onBeforeExecTransactionFromModule(address to, uint256 value, bytes memory data, Enum.Operation operation) internal virtual {}
+    function onBeforeExecTransactionFromModule(address to, uint256 value, bytes memory data, Enum.Operation operation)
+        internal
+        virtual
+    {}
 }

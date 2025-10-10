@@ -9,7 +9,6 @@ pragma solidity ^0.8.26;
  * Gnosis Safe Mock (NotSafe)
  * /*****************************************************************************
  */
-
 import "forge-std/console2.sol";
 import "forge-std/Test.sol";
 import {NotSafe} from "../src/NotSafe.sol";
@@ -23,15 +22,13 @@ contract TestNotSafeSimpleCase is TestManager {
     KeySet ks;
 
     function setUp() public {
-
-        // Setup        
+        // Setup
         vm.createSelectFork(vm.rpcUrl("opbnb"));
         ks = ownerSummoner(6, "not-seed");
     }
 
     // This is case where we test a blank Safe
     function test_No_Modules() public {
-        
         vm.startPrank(ks.addrs[0]);
         // ERC-20 compatible
         BEP20Token token = new BEP20Token();
@@ -101,7 +98,7 @@ contract TestNotSafeSimpleCase is TestManager {
                 0,
                 address(0),
                 address(0),
-                notSafe1.nonce() 
+                notSafe1.nonce()
             );
 
             // notsafe1 owner key 1, 2, 3 - threshold - 2
