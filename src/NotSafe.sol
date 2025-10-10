@@ -147,11 +147,12 @@ contract NotSafe {
         address gasToken,
         address payable refundReceiver,
         bytes memory signatures
-    ) external payable returns (bool success) {
-        nonce += 1;
+    ) external payable returns (bool success) {        
         _txHash = Transaction.getTransactionHash(
             address(this), to, value, data, operation, safeTxGas, baseGas, gasPrice, gasToken, refundReceiver, nonce
         );
+        
+        nonce += 1;
 
         // this block remove some calculaion on original Safe
         // since this is a mock Safe, I remove some gas calculation and payment
