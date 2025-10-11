@@ -75,10 +75,9 @@ console.log("Balance of notSafe: ", token.balanceOf(address(notSafe)));
 
 // ============================================
 // Build Transaction
-// Next transaction mean current nonce + 1
 // ============================================
 bytes32 txHash = Transaction.getTransactionHash(
-    address(notSafe),
+    address(notSafe1),
     address(token),
     0,
     abi.encodeWithSelector(token.transfer.selector, address(notSafe2), 1e18),
@@ -88,7 +87,7 @@ bytes32 txHash = Transaction.getTransactionHash(
     0,
     address(0),
     address(0),
-    notSafe.nonce() + 1
+    notSafe1.nonce()
 );
 
 // ============================================
