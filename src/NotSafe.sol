@@ -193,6 +193,8 @@ contract NotSafe {
         external
         returns (bool success)
     {
+        require(isModuleActivated[address(msg.sender)], "module not activated!");
+
         //bytes32 moduleTxHash = keccak256(abi.encodePacked(to, value, data, operation, module));
         bytes32 moduleTxHash;
 
@@ -238,6 +240,23 @@ contract NotSafe {
         else emit ExecutionFromModuleFailure(msg.sender);
     }
 
+    function getTransactionHash(
+        address to,
+        uint256 value,
+        bytes memory data,
+        Enum.Operation operation,
+        uint256 safeTxGas,
+        uint256 baseGas,
+        uint256 gasPrice,
+        address gasToken,
+        address refundReceiver,
+        uint256 _nonce
+    ) public view returns (bytes32) {
+        return Transaction.getTransactionHash(
+            address(this), to, value, data, operation, safeTxGas, baseGas, gasPrice, gasToken, refundReceiver, _nonce
+        );
+    }
+
     // Fallback Handler here
     fallback() external {
         address handle = fallbackAddress;
@@ -250,6 +269,81 @@ contract NotSafe {
                 return(0, returndatasize())
             }
         }
+    }
+
+    /*
+    // ================================================
+    // Swap Owner
+    // Safe Original Implementation
+    // At this point we need a implement mimic  this behave
+    // ================================================
+
+    // variables
+    address public constant SENTINEL_OWNERS = address(0x1);
+
+    function swapOwner(address prevOwner, address oldOwner, address newOwner) public authorized {
+        // Owner address cannot be null, the sentinel or the Safe itself.
+        require(newOwner != address(0) && newOwner != SENTINEL_OWNERS && newOwner != address(this), "GS203");
+        // No duplicate owners allowed.
+        require(owners[newOwner] == address(0), "GS204");
+        // Validate oldOwner address and check that it corresponds to owner index.
+        require(oldOwner != address(0) && oldOwner != SENTINEL_OWNERS, "GS203");
+        require(owners[prevOwner] == oldOwner, "GS205");
+        owners[newOwner] = owners[oldOwner];
+        owners[prevOwner] = newOwner;
+        owners[oldOwner] = address(0);
+        emit RemovedOwner(oldOwner);
+        emit AddedOwner(newOwner);
+    }
+
+
+    */
+
+    // variables
+    address public constant SENTINEL_OWNERS = address(0x1);
+
+    // this is just try to mimic the behave "swapOwner"
+    // highly unrecommend
+    function swapOwner(address previousOwner, address oldOwner, address newOwner) external returns (bool) {
+        require(isOwner[oldOwner], "Old owner not found");
+        require(newOwner != address(0) && newOwner != SENTINEL_OWNERS, "New Owner Invalid");
+        if (previousOwner != SENTINEL_OWNERS) {
+            require(isOwner[previousOwner], "previousOwner not found");
+        }
+
+        require(!isOwner[newOwner], "newOwner Invalid");
+
+        uint256 len = owners.length();
+        address[] memory arr = new address[](len);
+        for (uint256 i = 0; i < len; i++) {
+            arr[i] = owners.at(i);
+        }
+
+        // find index
+        int256 idx = -1;
+        for (uint256 i = 0; i < len; i++) {
+            if (arr[i] == oldOwner) {
+                idx = int256(i);
+                break;
+            }
+        }
+        require(idx >= 0, "Old owner not found");
+
+        // clear existing set
+        for (uint256 i = 0; i < len; i++) {
+            owners.remove(arr[i]);
+            isOwner[arr[i]] = false;
+        }
+
+        // re-add with replacement at idx
+        for (uint256 i = 0; i < len; i++) {
+            address o = (i == uint256(idx)) ? newOwner : arr[i];
+            if (owners.add(o)) {
+                isOwner[o] = true;
+            }
+        }
+
+        return true;
     }
 
     function checkSignatures(bytes32 txHash, bytes memory signatures) public view returns (bool) {

@@ -9,7 +9,6 @@ pragma solidity =0.8.26;
  * Gnosis Safe Mock (NotSafe)
  * /*****************************************************************************
  */
-import "forge-std/Test.sol";
 import "forge-std/console2.sol";
 import "forge-std/console.sol";
 import {Enum} from "./libraries/Enum.sol";
@@ -33,25 +32,31 @@ contract MockGuard is BaseGuard {
         address payable refundReceiver,
         bytes memory signatures,
         address executor
-    ) external override {
+    ) external view override {
         bytes32 txHash;
         uint256 nonce;
         {
             ISafe safe = ISafe(payable(msg.sender));
             nonce = safe.nonce();
-            //// nonce++ when pass to this function so you should - 1 to get real nonce
+            //// nonce++ when pass to this function, so you should - 1 to get real nonce
             txHash = safe.getTransactionHash(
                 to, value, data, operation, safeTxGas, baseGas, gasPrice, gasToken, refundReceiver, nonce - 1
             );
 
+            console.log(" ================================= ");
             console.log("checkTransaction");
+            console2.logAddress(executor);
+            console2.logBytes32(txHash);
+            console2.logBytes(signatures);
         }
     }
 
     // Safe call this function after execute transaction
-    function checkAfterExecution(bytes32 txHash, bool success) external override {
+    function checkAfterExecution(bytes32 txHash, bool success) external pure override {
         // normaly, you should do change the state of Guard here.
-        console.log("checkAfterExecution");
+        console.log(" ================================= ");
+        console.log("checkAfterExecution", success);
+        console2.logBytes32(txHash);
     }
 
     // Safe call this function before execute transaction using module
@@ -64,12 +69,17 @@ contract MockGuard is BaseGuard {
     ) external pure override returns (bytes32 moduleTxHash) {
         // moduleTxHash = keccak256(abi.encodePacked(to, value, data, operation, module));
         // Implement Guard Multisig Here
+        console.log(" ================================= ");
+        moduleTxHash = keccak256(abi.encodePacked(to, value, data, operation, module));
         console.log("checkModuleTransaction");
+        console2.logBytes32(moduleTxHash);
     }
 
     // Safe call this function after execute transaction using module
-    function checkAfterModuleExecution(bytes32 txHash, bool success) external override {
+    function checkAfterModuleExecution(bytes32 txHash, bool success) external pure override {
         // Implement Guard Multisig Confirm Here
-        console.log("checkAfterModuleExecution");
+        console.log(" ================================= ");
+        console.log("checkAfterModuleExecution", success);
+        console2.logBytes32(txHash);
     }
 }

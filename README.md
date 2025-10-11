@@ -14,7 +14,7 @@ but skips all proxy layers — it performs **real calls** directly for determini
 ## Motivation
 
 **I once researched Gnosis Safe.**  
-*I noticed that Modules, Guards, and Fallback Handlers are very powerful concepts, but strangely there are few runnable examples outside the Safe team's own implementations.*  
+*I noticed that Module and  Guard are very powerful concepts, but strangely there are few runnable examples outside the Safe team's own implementations.*  
 
 **I suspect the reason is that simulating true Safe behaviour is hard** — I couldn't find a suitable mock to rehearse these interactions.  
 
@@ -26,8 +26,9 @@ but skips all proxy layers — it performs **real calls** directly for determini
 
 ---
 ## Note
-Since this is a test framework, you should check test directory for example
-
+- **test/TestNotSafeSimpleCase.t** is multisig ERC20 transfer test
+- **test/TestNotSafeWithGuard.t** is multisig test with safe Guard
+- **test/TestNotSafeWithModule.t** is example that swap owner of safe with Module and Guard.
 ---
 ## Quick Start
 ```bash
