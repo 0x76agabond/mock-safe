@@ -91,10 +91,9 @@ contract NotSafe {
         return true;
     }
 
-
     // ===========================================
     function setModule(address module) public returns (bool) {
-            if (isModuleActivated[module]) {
+        if (isModuleActivated[module]) {
             emit ModuleError();
             return false;
         }
@@ -133,10 +132,7 @@ contract NotSafe {
     event OwnersError();
     event ThresholdChanged(uint256 newThreshold);
 
-    function setOwnersAndThreshold(address[] calldata newOwners, uint256 newThreshold)
-        external
-        returns (bool)
-    {
+    function setOwnersAndThreshold(address[] calldata newOwners, uint256 newThreshold) external returns (bool) {
         // Validate input first
         if (newOwners.length == 0) {
             emit OwnersError();
@@ -160,7 +156,9 @@ contract NotSafe {
             owners.remove(a);
             isOwner[a] = false;
 
-            unchecked { --i; }
+            unchecked {
+                --i;
+            }
         }
 
         emit OwnersCleared();
@@ -186,7 +184,6 @@ contract NotSafe {
 
         return true;
     }
-
 
     // Safe Internal check here
     function onBeforeExecTransaction(
@@ -232,19 +229,20 @@ contract NotSafe {
         }
 
         if (guardAddress != address(0)) {
-            ITransactionGuard(guardAddress).checkTransaction(
-                to,
-                value,
-                data,
-                operation,
-                safeTxGas,
-                baseGas,
-                gasPrice,
-                gasToken,
-                refundReceiver,
-                signatures,
-                msg.sender
-            );
+            ITransactionGuard(guardAddress)
+                .checkTransaction(
+                    to,
+                    value,
+                    data,
+                    operation,
+                    safeTxGas,
+                    baseGas,
+                    gasPrice,
+                    gasToken,
+                    refundReceiver,
+                    signatures,
+                    msg.sender
+                );
         }
 
         // exec transaction here

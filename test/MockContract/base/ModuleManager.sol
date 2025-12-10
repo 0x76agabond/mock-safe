@@ -298,6 +298,5 @@ abstract contract ModuleManager is SelfAuthorized, Executor, IModuleManager {
      */
     function onBeforeExecTransactionFromModule(address to, uint256 value, bytes memory data, Enum.Operation operation)
         internal
-        virtual
-    {}
+        virtual {}
 }
