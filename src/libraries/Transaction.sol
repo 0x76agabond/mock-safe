@@ -11,6 +11,14 @@ pragma solidity ^0.8.26;
  */
 import {Enum} from "./Enum.sol";
 
+/*
+
+✅  [Success] Hash: 0x2d8a67713a81e7fb3c3b9772876f4ccc42c893d5443c464e8492ef9a378a1334
+Contract Address: 0x8dD65CE637D9932E58211b42D59940C2f1C8891b
+Block: 106293383
+
+*/
+
 // Implement EIP-712
 library Transaction {
     bytes32 private constant DOMAIN_SEPARATOR_TYPEHASH =
