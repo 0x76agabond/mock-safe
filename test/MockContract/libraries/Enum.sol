@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 
-/**
+/*************************************************************************
  * \
  * Author: Hoang <ginz1504@gmail.com>
- * Contact: https://github.com/0x17agabond
+ * Contact: https://github.com/0x76agabond
  * =============================================================================
- * Diamond Testing via OOP (DTO)
+ * Gnosis Safe Mock (NotSafe)
  * /*****************************************************************************
  */
 pragma solidity ^0.8.26;

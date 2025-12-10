@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-/**
+/*************************************************************************
  * \
  * Author: Hoang <ginz1504@gmail.com>
  * Contact: https://github.com/0x76agabond
@@ -51,6 +51,11 @@ contract NotSafe {
         activateSignature = activate;
     }
 
+    // Module execution related
+    event ModuleAdded(address module);
+    event ModuleRemoved(address module);
+    event ModuleError();
+
     event ExecutionSuccess(bytes32 indexed txHash, uint256 payment);
     event ExecutionFailure(bytes32 indexed txHash, uint256 payment);
     event ExecutionFromModuleSuccess(address sender);
@@ -71,21 +76,47 @@ contract NotSafe {
     // ===========================================
     address public guardAddress;
 
-    function setGuard(address guard) public {
+    event GuardChanged(address guard);
+    event GuardError();
+
+    function setGuard(address guard) public returns (bool) {
+        if (guard == address(0) || guard == guardAddress) {
+            emit GuardError();
+            return false;
+        }
+
         guardAddress = guard;
+
+        emit GuardChanged(guard);
+        return true;
     }
+
 
     // ===========================================
-    function setModule(address module) public {
-        require(!isModuleActivated[module], "module existed");
+    function setModule(address module) public returns (bool) {
+            if (isModuleActivated[module]) {
+            emit ModuleError();
+            return false;
+        }
+
         isModuleActivated[module] = true;
         modules.add(module);
+
+        emit ModuleAdded(module);
+        return true;
     }
 
-    function removeModule(address module) public {
-        require(isModuleActivated[module], "module not existed");
+    function removeModule(address module) public returns (bool) {
+        if (!isModuleActivated[module]) {
+            emit ModuleError();
+            return false;
+        }
+
         isModuleActivated[module] = false;
         modules.remove(module);
+
+        emit ModuleRemoved(module);
+        return true;
     }
 
     // ===========================================
@@ -95,28 +126,67 @@ contract NotSafe {
         fallbackAddress = fallbackHandler;
     }
 
-    function setOwnersAndThreshold(address[] calldata newOwners, uint256 newThreshold) external {
-        uint256 len = owners.length();
-        for (uint256 i = len; i > 0;) {
+    // ===========================================
+
+    event OwnersCleared();
+    event OwnerAdded(address owner);
+    event OwnersError();
+    event ThresholdChanged(uint256 newThreshold);
+
+    function setOwnersAndThreshold(address[] calldata newOwners, uint256 newThreshold)
+        external
+        returns (bool)
+    {
+        // Validate input first
+        if (newOwners.length == 0) {
+            emit OwnersError();
+            return false;
+        }
+
+        if (newThreshold == 0) {
+            emit OwnersError();
+            return false;
+        }
+
+        if (newThreshold > newOwners.length) {
+            emit OwnersError();
+            return false;
+        }
+
+        // Clear current owners
+        uint256 lenOld = owners.length();
+        for (uint256 i = lenOld; i > 0;) {
             address a = owners.at(i - 1);
             owners.remove(a);
             isOwner[a] = false;
-            unchecked {
-                --i;
+
+            unchecked { --i; }
+        }
+
+        emit OwnersCleared();
+
+        // Add new owners
+        for (uint256 i = 0; i < newOwners.length; i++) {
+            address o = newOwners[i];
+
+            if (o == address(0)) {
+                emit OwnersError();
+                return false;
+            }
+
+            if (owners.add(o)) {
+                isOwner[o] = true;
+                emit OwnerAdded(o);
             }
         }
 
-        for (uint256 i = 0; i < newOwners.length; i++) {
-            address o = newOwners[i];
-            require(o != address(0), "Owner=0");
-            if (owners.add(o)) {
-                isOwner[o] = true;
-            }
-        }
-        require(newThreshold > 0, "threshold=0");
-        require(newThreshold <= owners.length(), "threshold>owners");
+        // Apply threshold
         threshold = newThreshold;
+        emit ThresholdChanged(newThreshold);
+
+        return true;
     }
+
 
     // Safe Internal check here
     function onBeforeExecTransaction(
