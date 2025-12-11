@@ -49,40 +49,39 @@ contract NotSafe {
 
     function changeActivateSignature(bool activate) public {
         activateSignature = activate;
+        emit ActivateSignatureChanged(msg.sender);
     }
 
     // Module execution related
-    event ModuleAdded(address module);
-    event ModuleRemoved(address module);
-    event ModuleError();
+    event ActivateSignatureChanged(address sender);
+
+    event GuardChanged(address guard);
+    error GuardError();
 
     event ExecutionSuccess(bytes32 indexed txHash, uint256 payment);
-    event ExecutionFailure(bytes32 indexed txHash, uint256 payment);
+    event ExecutionFailure(bytes32 txHash, uint256 payment);
     event ExecutionFromModuleSuccess(address sender);
     event ExecutionFromModuleFailure(address sender);
 
-    event ExecTransactionCalled(
-        bytes32 indexed txHash,
-        address indexed to,
-        uint256 value,
-        address indexed sender,
-        bool success,
-        bytes returnData
-    );
+    event OwnersCleared();
+    event OwnerAdded(address owner);
+    error OwnersError();
+    event ThresholdChanged(uint256 newThreshold);
 
+    event ModuleAdded(address module);
+    event ModuleRemoved(address module);
+    error ModuleError();
+
+    // ===========================================
     // This is where you can setup a Guard
     // No auth since this is a mock
     // Highly unrecommend on production
     // ===========================================
     address public guardAddress;
 
-    event GuardChanged(address guard);
-    event GuardError();
-
     function setGuard(address guard) public returns (bool) {
         if (guard == address(0) || guard == guardAddress) {
-            emit GuardError();
-            return false;
+            revert GuardError();
         }
 
         guardAddress = guard;
@@ -94,8 +93,7 @@ contract NotSafe {
     // ===========================================
     function setModule(address module) public returns (bool) {
         if (isModuleActivated[module]) {
-            emit ModuleError();
-            return false;
+            revert ModuleError();
         }
 
         isModuleActivated[module] = true;
@@ -107,8 +105,7 @@ contract NotSafe {
 
     function removeModule(address module) public returns (bool) {
         if (!isModuleActivated[module]) {
-            emit ModuleError();
-            return false;
+            revert ModuleError();
         }
 
         isModuleActivated[module] = false;
@@ -127,26 +124,18 @@ contract NotSafe {
 
     // ===========================================
 
-    event OwnersCleared();
-    event OwnerAdded(address owner);
-    event OwnersError();
-    event ThresholdChanged(uint256 newThreshold);
-
     function setOwnersAndThreshold(address[] calldata newOwners, uint256 newThreshold) external returns (bool) {
         // Validate input first
         if (newOwners.length == 0) {
-            emit OwnersError();
-            return false;
+            revert OwnersError();
         }
 
         if (newThreshold == 0) {
-            emit OwnersError();
-            return false;
+            revert OwnersError();
         }
 
         if (newThreshold > newOwners.length) {
-            emit OwnersError();
-            return false;
+            revert OwnersError();
         }
 
         // Clear current owners
@@ -168,8 +157,7 @@ contract NotSafe {
             address o = newOwners[i];
 
             if (o == address(0)) {
-                emit OwnersError();
-                return false;
+                revert OwnersError();
             }
 
             if (owners.add(o)) {
@@ -224,7 +212,8 @@ contract NotSafe {
         // this block remove some calculaion on original Safe
         // since this is a mock Safe, I remove some gas calculation and payment
 
-        if (activateSignature) {
+        bool sigActive = activateSignature;
+        if (sigActive) {
             require(checkSignatures(_txHash, signatures), "Invalid Signature");
         }
 
